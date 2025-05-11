@@ -1,22 +1,134 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import './custom.css';
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: #6ad7b7;
+  --primary-dark: #4bbd9b;
+  --secondary: #e6f0ed;
+  --text-primary: #2a353a;
+  --text-secondary: #5e6e6a;
+  --card-bg: #ffffff;
+  --card-bg-dark: #2a353a;
 }
-
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #121a1d;
     --foreground: #ededed;
+    --secondary: #232b2f;
+    --text-primary: #ffffff;
+    --text-secondary: #b8c6c9;
+    --card-bg: #1a2327;
+    --card-bg-dark: #1e2a30;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', Arial, sans-serif;
+}
+
+/* Custom styles for 3D card effects */
+.backface-hidden {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+@layer utilities {
+  .perspective {
+    perspective: 1500px;
+  }
+  
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--primary);
+    border-radius: 6px;
+    border: 2px solid transparent;
+  }
+  
+  /* Glass morphism utility classes */
+  .glass-light {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+  
+  .glass-dark {
+    background: rgba(26, 35, 39, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(35, 43, 47, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-[#2a353a] to-[#4a5a63] dark:from-white dark:to-[#b8c6c9] bg-clip-text text-transparent;
+  }
+  
+  /* Gradient buttons */
+  .btn-gradient {
+    @apply bg-gradient-to-r from-[#6ad7b7] to-[#4bbd9b] hover:from-[#4bbd9b] hover:to-[#3aa38a] text-white font-bold;
+  }
+}
+
+/* 3D Card animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.float {
+  animation: float 5s ease-in-out infinite;
+}
+
+/* Hero section animated background */
+.hero-bg {
+  background-image: 
+    radial-gradient(circle at 20% 35%, rgba(106, 215, 183, 0.15) 0%, transparent 30%),
+    radial-gradient(circle at 75% 44%, rgba(75, 189, 155, 0.1) 0%, transparent 25%);
+  background-size: 100% 100%;
+  background-position: center center;
+}
+
+.dark .hero-bg {
+  background-image: 
+    radial-gradient(circle at 20% 35%, rgba(106, 215, 183, 0.07) 0%, transparent 30%),
+    radial-gradient(circle at 75% 44%, rgba(75, 189, 155, 0.05) 0%, transparent 25%);
+}
+
+/* Animated cards in hero section */
+.animated-card {
+  transform-style: preserve-3d;
+  transform: rotateY(0deg) rotateX(0deg);
+  transition: transform 0.3s ease-out;
 }
