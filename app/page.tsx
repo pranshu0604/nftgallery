@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import type { DisplayNft } from '../components/types';
 import NftDetailModal from '../components/NftDetailModal';
 import FilterSortControls from '../components/FilterSortControls';
+import Loader from '../components/Loader';
 
 export default function HomePage() {
   const { publicKey } = useWallet();
@@ -24,9 +25,21 @@ export default function HomePage() {
   const [addressError, setAddressError] = useState<string | null>(null);
   const [selectedNft, setSelectedNft] = useState<DisplayNft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState("Initializing NFT Gallery");
+  const [loadingSubMessage, setLoadingSubMessage] = useState("");
 
   useEffect(() => {
     setIsClient(true);
+    // Reset loading message for initial load
+    setLoadingMessage("Initializing NFT Gallery");
+    setLoadingSubMessage("Preparing your viewing experience");
+    // Simulate initial page loading time (can be removed if not needed)
+    const timer = setTimeout(() => {
+      setPageLoading(false);
+    }, 2000);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // Update targetAddress when wallet connects/disconnects
@@ -40,7 +53,15 @@ export default function HomePage() {
         setTargetAddress(null);
       }
     }
-  }, [publicKey]);
+  }, [publicKey, manualAddressInput]);
+
+  // Show loading screen when fetching data
+  useEffect(() => {
+    // If we're loading data, reset pageLoading to true for a smoother experience
+    if (isLoading) {
+      setPageLoading(true);
+    }
+  }, [isLoading]);
 
   // Fetch NFTs for any address
   const fetchNftsByAddress = async (address: string) => {
@@ -51,6 +72,9 @@ export default function HomePage() {
       return;
     }
     setIsLoading(true);
+    setPageLoading(true);
+    setLoadingMessage("Fetching NFTs");
+    setLoadingSubMessage(`Retrieving collection for ${address.slice(0, 6)}...${address.slice(-4)}`);
     setError(null);
     setAddressError(null);
     setNfts([]);
@@ -94,9 +118,14 @@ export default function HomePage() {
       const shyftData = await shyftResp.json();
       log('Shyft API data', shyftData);
       if (!shyftData.result || shyftData.result.length === 0) {
+        setLoadingMessage("No NFTs Found");
+        setLoadingSubMessage("Your wallet doesn't contain any NFTs yet");
+        // Brief delay to show the message
+        await new Promise(resolve => setTimeout(resolve, 1500));
         setNfts([]);
         setFilteredNfts([]);
         setIsLoading(false);
+        setPageLoading(false);
         return;
       }
       // Map Shyft NFT data to DisplayNft
@@ -109,6 +138,9 @@ export default function HomePage() {
       }));
       setNfts(fetchedNfts);
       setFilteredNfts(fetchedNfts);
+      // Update loading message before finishing
+      setLoadingMessage("Preparing NFT Gallery");
+      setLoadingSubMessage(`Found ${fetchedNfts.length} NFTs to display`);
     } catch (e) {
       log('Unexpected error in fetchNftsByAddress', e);
       let shyftErrorMsg = 'unknown error';
@@ -118,10 +150,18 @@ export default function HomePage() {
         shyftErrorMsg = e;
       }
       setError(`Shyft NFT API failed.\n${shyftErrorMsg}`);
+      setLoadingMessage("Error Loading NFTs");
+      setLoadingSubMessage("Please try again later");
+      // Brief delay to show the error message
+      await new Promise(resolve => setTimeout(resolve, 1500));
       setNfts([]);
       setFilteredNfts([]);
     } finally {
       setIsLoading(false);
+      // Set pageLoading to false after data is loaded
+      setTimeout(() => {
+        setPageLoading(false);
+      }, 500); // Small delay for smooth transition
     }
   };
 
@@ -175,13 +215,17 @@ export default function HomePage() {
 
   // --- MAIN COMPONENT RENDER ---
   return (
-    <main className="flex min-h-screen flex-col items-center bg-[url('/bg-pattern.svg')] bg-fixed bg-cover bg-center bg-opacity-50 bg-white dark:bg-[#121a1d] p-0 overflow-hidden">
-      {/* Decorative elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 opacity-30">
-        <div className="absolute top-[5%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-gradient-to-br from-[#6ad7b7]/30 to-transparent blur-3xl"></div>
-        <div className="absolute bottom-[10%] right-[5%] w-[35rem] h-[35rem] rounded-full bg-gradient-to-br from-[#81a4f8]/20 to-transparent blur-3xl"></div>
-        <div className="absolute top-[30%] right-[15%] w-[25rem] h-[25rem] rounded-full bg-gradient-to-br from-[#f1c3f1]/10 to-transparent blur-3xl"></div>
-      </div>
+    <>
+      {/* Show loader when page is initializing or loading NFTs */}
+      {pageLoading && <Loader message={loadingMessage} subMessage={loadingSubMessage} />}
+      
+      <main className={`flex min-h-screen flex-col items-center bg-[url('/bg-pattern.svg')] bg-fixed bg-cover bg-center bg-opacity-50 bg-white dark:bg-[#121a1d] p-0 overflow-hidden ${pageLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-500'}`}>
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 opacity-30">
+          <div className="absolute top-[5%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-gradient-to-br from-[#6ad7b7]/30 to-transparent blur-3xl"></div>
+          <div className="absolute bottom-[10%] right-[5%] w-[35rem] h-[35rem] rounded-full bg-gradient-to-br from-[#81a4f8]/20 to-transparent blur-3xl"></div>
+          <div className="absolute top-[30%] right-[15%] w-[25rem] h-[25rem] rounded-full bg-gradient-to-br from-[#f1c3f1]/10 to-transparent blur-3xl"></div>
+        </div>
       
       {/* Header Bar with glass effect and theme toggle */}
       <header className="w-full backdrop-blur-md bg-white/70 dark:bg-[#1a2327]/80 border-b border-[#e6f0ed]/50 dark:border-[#232b2f]/50 sticky top-0 z-50">
@@ -360,5 +404,6 @@ export default function HomePage() {
         onClose={() => setIsModalOpen(false)} 
       />
     </main>
+    </>
   );
 }

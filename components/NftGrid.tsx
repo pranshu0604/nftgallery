@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { DisplayNft } from './types';
 import { motion, AnimatePresence } from 'framer-motion';
 import NftDetailModal from './NftDetailModal';
+import NftLoading from './NftLoading';
 
 export function log(...args: any[]) {
   if (typeof window !== 'undefined') {
@@ -445,13 +446,7 @@ export function NftGrid({ nfts, isLoading, error }: { nfts: DisplayNft[]; isLoad
   }
   
   if (isLoading) {
-    return (
-      <div className="w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {renderSkeletonLoader()}
-        </div>
-      </div>
-    );
+    return <NftLoading />;
   }
   
   if (!nfts.length) {
