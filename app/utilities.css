@@ -1,0 +1,40 @@
+/* Custom utilities */
+@layer utilities {
+  .perspective {
+    perspective: 1500px;
+  }
+  
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .glass-light {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+  
+  .glass-dark {
+    background: rgba(26, 35, 39, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(35, 43, 47, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  .gradient-text {
+    background-image: linear-gradient(to right, var(--text-primary), var(--text-secondary));
+    background-clip: text;
+    color: transparent;
+  }
+  
+  .btn-gradient {
+    background-image: linear-gradient(to right, var(--accent), var(--accent-hover));
+    color: white;
+    font-weight: bold;
+  }
+  
+  .btn-gradient:hover {
+    background-image: linear-gradient(to right, var(--accent-hover), var(--accent));
+  }
+}

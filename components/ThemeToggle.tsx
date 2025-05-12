@@ -2,137 +2,99 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTheme } from 'next-themes';
 
 export default function ThemeToggle() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   
-  // Initialize theme based on system preference or saved preference
+  // Wait for component to mount to avoid hydration mismatch
   useEffect(() => {
-    // Check if there's a saved preference
-    const savedTheme = localStorage.getItem('theme');
-    
-    if (savedTheme === 'dark') {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else if (savedTheme === 'light') {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove('dark');
-    } else {
-      // Use system preference as default
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setIsDarkMode(prefersDark);
-      if (prefersDark) {
-        document.documentElement.classList.add('dark');
-      }
-    }
+    setMounted(true);
   }, []);
   
+  // Don't render anything until mounted to prevent hydration mismatch
+  if (!mounted) return null;
+  
   // Toggle theme function
+  const isDark = resolvedTheme === 'dark';
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    
-    if (isDarkMode) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    }
+    setTheme(isDark ? 'light' : 'dark');
   };
   
   return (
     <motion.button
-      className="relative h-10 w-20 rounded-full bg-gradient-to-br from-[#f5fcfa] to-[#e6f5f0] dark:from-[#232b2f] dark:to-[#1a2327] p-1 shadow-inner overflow-hidden border border-[#e6f0ed]/50 dark:border-[#232b2f]/70"
       onClick={toggleTheme}
-      aria-label={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
+      className={`relative overflow-hidden h-10 w-20 rounded-full p-1 transition-colors border ${
+        isDark 
+          ? 'bg-dark-background border-dark-border' 
+          : 'bg-white border-light-border'
+      }`}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
+      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
-      {/* Track background with stars and sun rays */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Stars (only visible in dark mode) */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-white rounded-full"
-            style={{
-              top: `${15 + Math.random() * 70}%`,
-              left: `${10 + Math.random() * 80}%`,
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ 
-              opacity: isDarkMode ? [0, 1, 0] : 0,
-              scale: isDarkMode ? [0.8, 1.2, 0.8] : 1 
-            }}
-            transition={{ 
-              duration: 1 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2
-            }}
-          />
-        ))}
-        
-        {/* Sun rays (only visible in light mode) */}
-        {[...Array(5)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute bg-[#f9d71c]/50 blur-sm"
-            style={{
-              width: '30px',
-              height: '2px',
-              top: '50%',
-              left: '25%',
-              transformOrigin: '0 50%',
-              transform: `rotate(${i * 45}deg)`,
-            }}
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ 
-              opacity: !isDarkMode ? 0.7 : 0,
-              scale: !isDarkMode ? 1 : 0 
-            }}
-            transition={{ duration: 0.5 }}
-          />
-        ))}
-      </div>
-      
-      {/* Toggle slider */}
       <motion.div
-        className="h-8 w-8 rounded-full flex items-center justify-center relative z-10"
-        animate={{ 
-          x: isDarkMode ? 40 : 0,
-          backgroundColor: isDarkMode ? '#1a2327' : '#f9d71c',
-          boxShadow: isDarkMode 
-            ? '0 0 10px 2px rgba(255, 255, 255, 0.2) inset, 0 0 0 2px rgba(255, 255, 255, 0.1)' 
-            : '0 0 15px 2px rgba(249, 215, 28, 0.5), 0 0 0 2px rgba(249, 215, 28, 0.2)'
-        }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        className="absolute inset-0 flex items-center justify-center"
+        initial={false}
+        animate={{ opacity: isDark ? 0 : 1 }}
       >
-        {/* Sun */}
-        <motion.div
-          className="absolute inset-0 rounded-full bg-[#f9d71c] flex items-center justify-center"
-          animate={{ 
-            opacity: isDarkMode ? 0 : 1,
-            scale: isDarkMode ? 0 : 1
+        {/* Light mode pattern */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-1 h-1 rounded-full bg-light-accent" />
+          <div className="absolute top-2/3 right-1/3 w-1.5 h-1.5 rounded-full bg-light-accent" />
+          <div className="absolute bottom-1/4 left-1/2 w-1 h-1 rounded-full bg-light-accent" />
+        </div>
+      </motion.div>
+
+      <motion.div
+        className="relative z-10 w-8 h-8 rounded-full"
+        animate={{
+          x: isDark ? 40 : 0,
+          backgroundColor: isDark ? '#232b2f' : '#6ad7b7',
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      >
+        {/* Sun/Moon Icon */}
+        <motion.svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+          className="w-5 h-5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white"
+          animate={{
+            rotate: isDark ? 360 : 0,
+            scale: isDark ? 0.8 : 1,
           }}
-          transition={{ duration: 0.3 }}
         >
-          <div className="w-1 h-1 bg-[#f5fcfa]/30 rounded-full absolute top-1.5 left-1.5"></div>
-          <div className="w-1 h-1 bg-[#f5fcfa]/30 rounded-full absolute top-1.5 right-1.5"></div>
-        </motion.div>
-        
-        {/* Moon */}
-        <motion.div 
-          className="absolute rounded-full"
-          animate={{ 
-            opacity: isDarkMode ? 1 : 0,
-            scale: isDarkMode ? 1 : 0
-          }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="relative w-6 h-6 rounded-full bg-[#e6f0ed] overflow-hidden">
-            <div className="absolute w-4 h-4 rounded-full bg-[#1a2327] -right-1 top-1"></div>
-          </div>
-        </motion.div>
+          {isDark ? (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
+            />
+          ) : (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+            />
+          )}
+        </motion.svg>
+      </motion.div>
+
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center"
+        initial={false}
+        animate={{ opacity: isDark ? 1 : 0 }}
+      >
+        {/* Dark mode stars */}
+        <div className="absolute inset-0 opacity-70">
+          <div className="absolute top-1/3 left-1/4 w-0.5 h-0.5 rounded-full bg-dark-accent" />
+          <div className="absolute top-1/2 right-1/3 w-1 h-1 rounded-full bg-dark-accent" />
+          <div className="absolute bottom-1/3 left-1/2 w-0.5 h-0.5 rounded-full bg-dark-accent" />
+        </div>
       </motion.div>
     </motion.button>
   );

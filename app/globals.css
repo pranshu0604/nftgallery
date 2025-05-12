@@ -2,28 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 @import './custom.css';
+@import './theme.css';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #6ad7b7;
-  --primary-dark: #4bbd9b;
-  --secondary: #e6f0ed;
-  --text-primary: #2a353a;
-  --text-secondary: #5e6e6a;
-  --card-bg: #ffffff;
-  --card-bg-dark: #2a353a;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
+    --background: #ffffff;
+    --foreground: #1a2b36;
+    --text-primary: #1a2b36;
+    --text-secondary: #455a64;
+    --accent: #6ad7b7;
+    --accent-hover: #4bbd9b;
+    --border: #e0e7eb;
+  }
+
+  .dark {
     --background: #121a1d;
-    --foreground: #ededed;
-    --secondary: #232b2f;
+    --foreground: #ffffff;
     --text-primary: #ffffff;
     --text-secondary: #b8c6c9;
-    --card-bg: #1a2327;
-    --card-bg-dark: #1e2a30;
+    --accent: #6ad7b7;
+    --accent-hover: #4bbd9b;
+    --border: #232b2f;
+  }
+
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
   }
 }
 
